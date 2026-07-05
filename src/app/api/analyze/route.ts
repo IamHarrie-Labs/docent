@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
         const { repo, sha } = await cloneOrUpdate(url);
         send('phase', { phase: 'ingest', detail: 'Indexing repository…', repoId: repo.id, sha });
 
-        await indexRepo(repo, sha, (p) => send('phase', { phase: 'ingest', ...p, repoId: repo.id, sha }));
+        await indexRepo(repo, sha, (p) => send('phase', { ...p, phase: 'ingest', repoId: repo.id, sha }));
 
         send('phase', { phase: 'agents', detail: 'Agent swarm launching…', repoId: repo.id, sha, agents: AGENTS.map((a) => ({ id: a.id, title: a.title })) });
 

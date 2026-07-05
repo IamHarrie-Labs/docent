@@ -2,13 +2,22 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+// Lazy singleton — avoids concurrent open/DDL races when Next.js build
+// workers import this module in parallel.
+let _db: Database.Database | null = null;
 
-const db = new Database(path.join(DATA_DIR, 'docent.db'));
-db.pragma('journal_mode = WAL');
+function getDb(): Database.Database {
+  if (_db) return _db;
+  const DATA_DIR = path.join(process.cwd(), 'data');
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  _db = new Database(path.join(DATA_DIR, 'docent.db'));
+  _db.pragma('journal_mode = WAL');
+  _db.pragma('busy_timeout = 5000');
+  _db.exec(SCHEMA);
+  return _db;
+}
 
-db.exec(`
+const SCHEMA = `
 CREATE TABLE IF NOT EXISTS repos (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   url TEXT NOT NULL UNIQUE,
@@ -70,9 +79,9 @@ CREATE TABLE IF NOT EXISTS usage_events (
   est_cost_usd REAL NOT NULL,
   created_at TEXT DEFAULT (datetime('now'))
 );
-`);
+`;
 
-export default db;
+export default getDb;
 
 export interface Repo {
   id: number;
@@ -83,37 +92,37 @@ export interface Repo {
 }
 
 export function upsertRepo(url: string, name: string, localPath: string): Repo {
-  db.prepare(
+  getDb().prepare(
     `INSERT INTO repos (url, name, local_path) VALUES (?, ?, ?)
      ON CONFLICT(url) DO UPDATE SET local_path = excluded.local_path`,
   ).run(url, name, localPath);
-  return db.prepare('SELECT * FROM repos WHERE url = ?').get(url) as Repo;
+  return getDb().prepare('SELECT * FROM repos WHERE url = ?').get(url) as Repo;
 }
 
 export function getRepo(id: number): Repo | undefined {
-  return db.prepare('SELECT * FROM repos WHERE id = ?').get(id) as Repo | undefined;
+  return getDb().prepare('SELECT * FROM repos WHERE id = ?').get(id) as Repo | undefined;
 }
 
 export function listRepos(): Repo[] {
-  return db.prepare('SELECT * FROM repos ORDER BY created_at DESC').all() as Repo[];
+  return getDb().prepare('SELECT * FROM repos ORDER BY created_at DESC').all() as Repo[];
 }
 
 export function setLastCommit(repoId: number, sha: string) {
-  db.prepare('UPDATE repos SET last_commit = ? WHERE id = ?').run(sha, repoId);
+  getDb().prepare('UPDATE repos SET last_commit = ? WHERE id = ?').run(sha, repoId);
 }
 
 export function insertChunk(
   repoId: number, commitSha: string, filePath: string,
   startLine: number, endLine: number, content: string, embedding: Float32Array,
 ) {
-  db.prepare(
+  getDb().prepare(
     `INSERT INTO chunks (repo_id, commit_sha, file_path, start_line, end_line, content, embedding)
      VALUES (?, ?, ?, ?, ?, ?, ?)`,
   ).run(repoId, commitSha, filePath, startLine, endLine, content, Buffer.from(embedding.buffer));
 }
 
 export function deleteChunks(repoId: number, commitSha: string) {
-  db.prepare('DELETE FROM chunks WHERE repo_id = ? AND commit_sha = ?').run(repoId, commitSha);
+  getDb().prepare('DELETE FROM chunks WHERE repo_id = ? AND commit_sha = ?').run(repoId, commitSha);
 }
 
 export interface ChunkRow {
@@ -122,26 +131,26 @@ export interface ChunkRow {
 }
 
 export function getChunks(repoId: number, commitSha: string): ChunkRow[] {
-  return db.prepare(
+  return getDb().prepare(
     'SELECT id, file_path, start_line, end_line, content, embedding FROM chunks WHERE repo_id = ? AND commit_sha = ?',
   ).all(repoId, commitSha) as ChunkRow[];
 }
 
 export function saveSnapshot(repoId: number, commitSha: string, agent: string, report: string) {
-  db.prepare(
+  getDb().prepare(
     `INSERT INTO snapshots (repo_id, commit_sha, agent, report) VALUES (?, ?, ?, ?)
      ON CONFLICT(repo_id, commit_sha, agent) DO UPDATE SET report = excluded.report, created_at = datetime('now')`,
   ).run(repoId, commitSha, agent, report);
 }
 
 export function getSnapshots(repoId: number, commitSha: string): { agent: string; report: string }[] {
-  return db.prepare(
+  return getDb().prepare(
     'SELECT agent, report FROM snapshots WHERE repo_id = ? AND commit_sha = ?',
   ).all(repoId, commitSha) as { agent: string; report: string }[];
 }
 
 export function getPreviousAnalyzedCommit(repoId: number, excludeSha: string): string | null {
-  const row = db.prepare(
+  const row = getDb().prepare(
     `SELECT commit_sha, MAX(created_at) as t FROM snapshots
      WHERE repo_id = ? AND commit_sha != ? GROUP BY commit_sha ORDER BY t DESC LIMIT 1`,
   ).get(repoId, excludeSha) as { commit_sha: string } | undefined;
@@ -149,22 +158,22 @@ export function getPreviousAnalyzedCommit(repoId: number, excludeSha: string): s
 }
 
 export function addFact(repoId: number, fact: string, source: string, commitSha?: string) {
-  db.prepare('INSERT INTO facts (repo_id, fact, source, commit_sha) VALUES (?, ?, ?, ?)')
+  getDb().prepare('INSERT INTO facts (repo_id, fact, source, commit_sha) VALUES (?, ?, ?, ?)')
     .run(repoId, fact, source, commitSha ?? null);
 }
 
 export function getFacts(repoId: number, limit = 50): { fact: string; source: string; created_at: string }[] {
-  return db.prepare(
+  return getDb().prepare(
     'SELECT fact, source, created_at FROM facts WHERE repo_id = ? ORDER BY id DESC LIMIT ?',
   ).all(repoId, limit) as { fact: string; source: string; created_at: string }[];
 }
 
 export function addChatMessage(repoId: number, role: string, content: string) {
-  db.prepare('INSERT INTO chat_messages (repo_id, role, content) VALUES (?, ?, ?)').run(repoId, role, content);
+  getDb().prepare('INSERT INTO chat_messages (repo_id, role, content) VALUES (?, ?, ?)').run(repoId, role, content);
 }
 
 export function getChatHistory(repoId: number, limit = 20): { role: string; content: string }[] {
-  const rows = db.prepare(
+  const rows = getDb().prepare(
     'SELECT role, content FROM chat_messages WHERE repo_id = ? ORDER BY id DESC LIMIT ?',
   ).all(repoId, limit) as { role: string; content: string }[];
   return rows.reverse();
@@ -174,7 +183,7 @@ export function recordUsage(
   repoId: number | null, model: string, kind: string,
   promptTokens: number, completionTokens: number, estCost: number,
 ) {
-  db.prepare(
+  getDb().prepare(
     `INSERT INTO usage_events (repo_id, model, kind, prompt_tokens, completion_tokens, est_cost_usd)
      VALUES (?, ?, ?, ?, ?, ?)`,
   ).run(repoId, model, kind, promptTokens, completionTokens, estCost);
@@ -183,7 +192,7 @@ export function recordUsage(
 export function getUsageSummary(repoId?: number) {
   const where = repoId ? 'WHERE repo_id = ?' : '';
   const args = repoId ? [repoId] : [];
-  return db.prepare(
+  return getDb().prepare(
     `SELECT COUNT(*) as calls, SUM(prompt_tokens) as prompt_tokens,
             SUM(completion_tokens) as completion_tokens, SUM(est_cost_usd) as est_cost_usd
      FROM usage_events ${where}`,
