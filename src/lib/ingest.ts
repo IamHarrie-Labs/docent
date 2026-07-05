@@ -95,13 +95,6 @@ export async function indexRepo(
   repo: Repo, sha: string,
   onProgress?: (p: IngestProgress) => void,
 ): Promise<{ files: number; chunks: number }> {
-  // Skip if this commit is already indexed
-  if (getChunks(repo.id, sha).length > 0) {
-    onProgress?.({ phase: 'done', detail: 'Already indexed at this commit' });
-    setLastCommit(repo.id, sha);
-    return { files: 0, chunks: getChunks(repo.id, sha).length };
-  }
-
   onProgress?.({ phase: 'walk', detail: 'Scanning files…' });
   const files = walkFiles(repo.local_path);
 

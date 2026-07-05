@@ -43,7 +43,7 @@ Produce a markdown DEPENDENCY REPORT: runtime vs dev dependencies grouped by pur
     title: 'Diagram Artist',
     system: `You draw the system diagram for a repository.
 Explore with your tools to identify the real components and how they connect.
-Output EXACTLY ONE mermaid code block (\`\`\`mermaid ... \`\`\`) — a flowchart (graph TD) of the system's components and data flow, with short labels naming real modules/files from this repo. After the block, add 3-5 bullet notes. Keep the diagram under 20 nodes.`,
+Your response MUST start with a markdown code fence for the diagram: a line with exactly \`\`\`mermaid, then a flowchart (graph TD) of the system's components and data flow with short labels naming real modules/files from this repo, then a closing \`\`\` line. Never omit the \`\`\`mermaid fence — output it literally before the diagram, every time. After the closing fence, add 3-5 bullet notes. Keep the diagram under 20 nodes.`,
   },
   {
     id: 'tour',

@@ -35,8 +35,18 @@ function mdToHtml(md: string): string {
 }
 
 function extractMermaid(md: string): string | null {
-  const m = md.match(/```mermaid\n([\s\S]*?)```/);
-  return m ? m[1] : null;
+  const fenced = md.match(/```mermaid\n([\s\S]*?)```/);
+  if (fenced) return fenced[1];
+  // Model sometimes omits the fence — fall back to the bare diagram block.
+  const bare = md.match(/((?:graph|flowchart|sequenceDiagram|classDiagram)\s[\s\S]*?)(?:\n\n(?:[A-Z#-]|$)|$)/);
+  return bare ? bare[1] : null;
+}
+
+// Once the diagram is rendered as SVG, drop the raw source from the text below it.
+function stripMermaidSource(md: string): string {
+  return md
+    .replace(/```mermaid\n[\s\S]*?```/, '')
+    .replace(/(?:graph|flowchart|sequenceDiagram|classDiagram)\s[\s\S]*?(?=\n\n(?:[A-Z#-]|$)|$)/, '');
 }
 
 let mermaidMod: { render: (id: string, src: string) => Promise<{ svg: string }> } | null = null;
@@ -81,7 +91,7 @@ function Pane({ pane }: { pane: PaneState }) {
           <div className="toolline">{pane.tools.slice(-3).map((t, i) => <div key={i}>⚙ {t}</div>)}</div>
         )}
         {svg ? <div className="mermaidbox" dangerouslySetInnerHTML={{ __html: svg }} /> : null}
-        <div dangerouslySetInnerHTML={{ __html: mdToHtml(pane.text) }} />
+        <div dangerouslySetInnerHTML={{ __html: mdToHtml(svg ? stripMermaidSource(pane.text) : pane.text) }} />
       </div>
     </div>
   );
