@@ -1,7 +1,8 @@
 import { NextRequest } from 'next/server';
 import { cloneOrUpdate, indexRepo } from '@/lib/ingest';
-import { AGENTS, runAgent, extractFacts, type AgentEvent } from '@/lib/agents';
+import { AGENTS, runAgent, extractFacts, type AgentEvent, type AgentDef } from '@/lib/agents';
 import { generateChangeBriefing } from '@/lib/memory';
+import { generateDebate } from '@/lib/debate';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 600;
@@ -43,16 +44,25 @@ export async function POST(req: NextRequest) {
         });
 
         // All analyst agents in parallel, each streaming into its own pane.
+        const reports: { def: AgentDef; report: string }[] = [];
         await Promise.all(
           AGENTS.map(async (def) => {
             try {
               const report = await runAgent(def, repo, sha, emit);
+              reports.push({ def, report });
               await extractFacts(repo, sha, def.id, report);
             } catch (e) {
               emit({ agent: def.id, type: 'error', data: String((e as Error)?.message ?? e) });
             }
           }),
         );
+
+        // The team debate needs every report in hand, so it runs after the swarm finishes.
+        if (reports.length > 1) {
+          await generateDebate(repo, reports, emit).catch((e) => {
+            emit({ agent: 'debate', type: 'error', data: String(e?.message ?? e) });
+          });
+        }
 
         await memoryPromise;
         send('phase', { phase: 'done', detail: 'Analysis complete', repoId: repo.id, sha });

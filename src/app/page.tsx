@@ -13,12 +13,12 @@ interface PaneState {
 interface Usage { calls: number; prompt_tokens: number; completion_tokens: number; est_cost_usd: number }
 
 const AGENT_TITLES: Record<string, string> = {
-  architecture: '🏛 Architecture',
-  quickstart: '🚀 Quickstart',
-  config: '🔧 Config & Env Audit',
-  dependencies: '📦 Dependencies',
-  diagram: '🗺 System Diagram',
-  tour: '🧭 Guided Tour',
+  architecture: '🏗️ The Architect',
+  quickstart: '🛠️ The DevOps Engineer',
+  config: '🔒 The Security Engineer',
+  dependencies: '📦 The Dependency Engineer',
+  diagram: '🗺️ The Systems Cartographer',
+  tour: '🧭 The Mentor',
 };
 
 // Minimal markdown → HTML (headers, bold, inline/blocks of code) for pane rendering.
@@ -104,6 +104,7 @@ export default function Home() {
   const [phaseKind, setPhaseKind] = useState<'ok' | 'er' | ''>('');
   const [panes, setPanes] = useState<Record<string, PaneState>>({});
   const [memory, setMemory] = useState<PaneState | null>(null);
+  const [debate, setDebate] = useState<PaneState | null>(null);
   const [repoId, setRepoId] = useState<number | null>(null);
   const [sha, setSha] = useState<string | null>(null);
   const [usage, setUsage] = useState<Usage | null>(null);
@@ -131,6 +132,8 @@ export default function Home() {
   const updatePane = useCallback((id: string, fn: (p: PaneState) => PaneState) => {
     if (id === 'memory') {
       setMemory((prev) => fn(prev ?? { id: 'memory', title: 'Memory', status: 'running', text: '', tools: [] }));
+    } else if (id === 'debate') {
+      setDebate((prev) => fn(prev ?? { id: 'debate', title: 'Debate', status: 'running', text: '', tools: [] }));
     } else {
       setPanes((prev) => ({
         ...prev,
@@ -144,6 +147,7 @@ export default function Home() {
     setRunning(true);
     setPanes({});
     setMemory(null);
+    setDebate(null);
     setPhase('Starting…');
     setPhaseKind('');
 
@@ -269,8 +273,15 @@ export default function Home() {
 
       {memory && (
         <div className="memorypane">
-          <h3>🧠 What changed since my last visit</h3>
+          <h3>🧠 The Historian — what changed since my last visit</h3>
           <div dangerouslySetInnerHTML={{ __html: mdToHtml(memory.text) }} />
+        </div>
+      )}
+
+      {debate && (
+        <div className="debatepane">
+          <h3>🗣️ Team Debate &amp; Consensus</h3>
+          <div dangerouslySetInnerHTML={{ __html: mdToHtml(debate.text) }} />
         </div>
       )}
 

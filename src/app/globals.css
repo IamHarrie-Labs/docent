@@ -69,6 +69,12 @@ header.top {
 }
 .memorypane h3 { color: var(--accent-2); font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
 
+.debatepane {
+  border: 1px solid var(--warn); background: linear-gradient(180deg, #1f1a0f, var(--panel-2));
+  border-radius: 12px; padding: 14px 16px; margin-bottom: 16px;
+}
+.debatepane h3 { color: var(--warn); font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+
 .grid {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
   margin-bottom: 16px;

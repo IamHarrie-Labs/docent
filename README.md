@@ -2,9 +2,11 @@
 
 **A living onboarding portal for any codebase — with memory that compounds.**
 
-Point Docent at any GitHub repository. A swarm of six analyst agents explores it in parallel — reading files, searching code, following the evidence — and streams back an architecture overview, quickstart guide, config/env audit, dependency report, system diagram, and a guided tour for new contributors.
+Point Docent at any GitHub repository. Six named engineers — The Architect, The DevOps Engineer, The Security Engineer, The Dependency Engineer, The Systems Cartographer, and The Mentor — explore it in parallel, each with their own tools and point of view, streaming an architecture overview, quickstart guide, config/security audit, dependency report, system diagram, and a guided tour for new contributors.
 
-Then the part nobody else does: **Docent remembers.** Analyze the repo again after fifty commits and it tells you *what changed since its last visit* — "auth used to live in middleware, it moved to a service" — diffing its own past understanding against the new code. Ask it questions and it recalls previous conversations. It's not a docs generator; it's a codebase companion that gets smarter every time you return.
+Then they compare notes. **The Debate & Consensus** step reads all six reports and surfaces where they actually disagree (or, when they don't, says so honestly instead of inventing conflict) — then ends with a ranked, attributed list of what the next contributor should fix first.
+
+And the part nobody else does: **Docent remembers.** Analyze the repo again after fifty commits and The Historian tells you *what changed since its last visit* — "auth used to live in middleware, it moved to a service" — diffing its own past understanding against the new code. Ask it questions and it recalls previous conversations. It's not a docs generator; it's a codebase companion that gets smarter every time you return.
 
 Built solo in 48 hours for the **BTL Runtime Hackathon** (Jul 2026).
 
@@ -14,7 +16,7 @@ Every LLM call goes through the BTL gateway at `api.badtheorylabs.com/v1`:
 
 | Runtime feature | Where Docent uses it |
 | --- | --- |
-| **Chat Completions** (`/v1/chat/completions`) | All six analyst agents, memory briefings, repo chat |
+| **Chat Completions** (`/v1/chat/completions`) | All six analyst agents, debate/consensus synthesis, memory briefings, repo chat |
 | **Tool Use** | Agents call `list_files`, `read_file`, `search_code` to explore the repo |
 | **Streaming** | Every agent streams live into its own dashboard pane (SSE) |
 | **Embeddings** (`/v1/embeddings`) | Whole-repo semantic index (`text-embedding-3-small`) powering retrieval |
@@ -38,13 +40,13 @@ Analyzed [`tinytasks-api`](https://github.com/IamHarrie-Labs/tinytasks-api), a s
 
 > Auth was extracted, a new endpoint appeared, and the TODO was retired. The inline `checkAuth()` function in `server.js` that was duplicated across every protected route has been lifted into `middleware/auth.js` as proper Express middleware (`requireAuth`)... [Previous conclusion] "Auth is implemented inline via `checkAuth()`"... now stale.
 
-Full run — 6 agents, memory briefing, repo chat — cost **$0.006** across 30 runtime calls.
+Full run — 6 agents, debate/consensus, memory briefing — costs well under a cent (~$0.008 across ~37 runtime calls on a real repo).
 
 ## Architecture
 
 ```
 Next.js app
-├── /api/analyze   SSE: clone → embed index → 6 parallel tool-use agents + memory briefing
+├── /api/analyze   SSE: clone → embed index → 6 parallel tool-use agents → debate/consensus + memory briefing
 ├── /api/chat      retrieval (BTL embeddings) + memory → streamed, cited answers
 ├── /api/usage     live cost meter
 └── SQLite (better-sqlite3)
