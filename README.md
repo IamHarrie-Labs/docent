@@ -32,6 +32,14 @@ npm run dev            # http://localhost:3000
 
 Paste a repo URL, hit **Analyze**, watch the swarm work. Then commit something to the repo and analyze again — the "What changed since my last visit" briefing appears.
 
+## See it work
+
+Analyzed [`tinytasks-api`](https://github.com/IamHarrie-Labs/tinytasks-api), a small demo repo, twice — before and after a commit that extracted inline auth checks into shared middleware. On the second run, Docent's memory briefing said, unprompted:
+
+> Auth was extracted, a new endpoint appeared, and the TODO was retired. The inline `checkAuth()` function in `server.js` that was duplicated across every protected route has been lifted into `middleware/auth.js` as proper Express middleware (`requireAuth`)... [Previous conclusion] "Auth is implemented inline via `checkAuth()`"... now stale.
+
+Full run — 6 agents, memory briefing, repo chat — cost **$0.006** across 30 runtime calls.
+
 ## Architecture
 
 ```
