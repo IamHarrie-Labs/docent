@@ -76,12 +76,12 @@ export default function Home() {
 
           <Navbar />
 
-          <div className="absolute bottom-0 left-0 p-6 md:p-12 pb-10 md:pb-14 max-w-lg md:max-w-xl">
+          <div className="absolute bottom-0 left-0 p-6 md:p-12 pb-10 md:pb-14 max-w-xl md:max-w-2xl">
             <h1 className="select-none mb-5" style={{ color: '#E1E0CC' }}>
               <WordsPullUp
                 text="Docent"
                 showAsterisk
-                className="text-6xl sm:text-7xl md:text-8xl font-extrabold leading-[0.85] tracking-[-0.03em]"
+                className="text-5xl sm:text-6xl md:text-7xl font-extrabold leading-[0.85] tracking-[-0.03em]"
               />
             </h1>
             <div className="flex flex-col gap-5">
