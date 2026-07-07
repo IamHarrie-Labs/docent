@@ -1,8 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { Navbar } from '@/components/Navbar';
 
 interface PaneState {
   id: string;
@@ -245,24 +244,24 @@ export default function AnalyzePage() {
   const paneList = Object.values(panes);
 
   return (
-    <div className="container">
-      <Link href="/" className="inline-flex items-center gap-1.5 text-xs text-primary/70 hover:text-primary mb-4">
-        <ArrowLeft size={14} /> Back
-      </Link>
+    <div className="relative min-h-screen bg-black">
+      <Navbar />
+      <div className="container pt-28 sm:pt-32">
+        <header className="top flex flex-wrap items-end justify-between gap-3 pb-6">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-medium tracking-tight" style={{ color: '#E1E0CC' }}>
+              Docent<span className="text-primary">.</span>
+            </h1>
+            <span className="italic font-serif-italic text-primary/70 text-sm sm:text-base">point it at a repo and watch the team work</span>
+          </div>
+          <div className="meter" title="Estimated from per-call usage returned by the BTL runtime">
+            <div className="grp"><span className="big">${(usage?.est_cost_usd ?? 0).toFixed(4)}</span><span className="lbl">est. cost</span></div>
+            <div className="grp"><span>{((usage?.prompt_tokens ?? 0) + (usage?.completion_tokens ?? 0)).toLocaleString()}</span><span className="lbl">tokens</span></div>
+            <div className="grp"><span>{usage?.calls ?? 0}</span><span className="lbl">runtime calls</span></div>
+          </div>
+        </header>
 
-      <header className="top flex flex-wrap items-center justify-between gap-3 py-1.5 pb-4">
-        <div className="flex flex-wrap items-baseline gap-2.5">
-          <h1 className="text-xl tracking-tight">Docent<span className="text-primary">.</span></h1>
-          <span className="text-muted text-[12.5px]">point it at a repo and watch the team work</span>
-        </div>
-        <div className="meter" title="Estimated from per-call usage returned by the BTL runtime">
-          <div className="grp"><span className="big">${(usage?.est_cost_usd ?? 0).toFixed(4)}</span><span className="lbl">est. cost</span></div>
-          <div className="grp"><span>{((usage?.prompt_tokens ?? 0) + (usage?.completion_tokens ?? 0)).toLocaleString()}</span><span className="lbl">tokens</span></div>
-          <div className="grp"><span>{usage?.calls ?? 0}</span><span className="lbl">runtime calls</span></div>
-        </div>
-      </header>
-
-      <div className="inputrow">
+        <div className="inputrow">
         <input
           placeholder="https://github.com/owner/repo, paste any repository"
           value={url}
@@ -318,7 +317,8 @@ export default function AnalyzePage() {
         </div>
       )}
 
-      <footer>every call above went through api.badtheorylabs.com · chat completions + embeddings + tool use + streaming</footer>
+        <footer>every call above went through api.badtheorylabs.com · chat completions + embeddings + tool use + streaming</footer>
+      </div>
     </div>
   );
 }

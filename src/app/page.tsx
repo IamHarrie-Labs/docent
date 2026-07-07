@@ -76,46 +76,42 @@ export default function Home() {
 
           <Navbar />
 
-          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12 pb-10 md:pb-14">
-            <div className="grid grid-cols-12 gap-4 items-end">
-              <div className="col-span-12 lg:col-span-8">
-                <h1 className="select-none" style={{ color: '#E1E0CC' }}>
-                  <WordsPullUp
-                    text="Docent"
-                    showAsterisk
-                    className="text-[26vw] sm:text-[24vw] md:text-[22vw] lg:text-[20vw] xl:text-[19vw] 2xl:text-[20vw] font-medium leading-[0.85] tracking-[-0.07em]"
-                  />
-                </h1>
-              </div>
-              <div className="col-span-12 lg:col-span-4 flex flex-col gap-5 lg:pb-6">
-                <motion.p
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.8, ease: EASE, delay: 0.5 }}
-                  className="text-primary/70 text-xs sm:text-sm md:text-base"
-                  style={{ lineHeight: 1.2 }}
+          <div className="absolute bottom-0 left-0 p-6 md:p-12 pb-10 md:pb-14 max-w-md md:max-w-lg">
+            <h1 className="select-none mb-5" style={{ color: '#E1E0CC' }}>
+              <WordsPullUp
+                text="Docent"
+                showAsterisk
+                className="text-6xl sm:text-7xl md:text-8xl font-medium leading-[0.85] tracking-[-0.03em]"
+              />
+            </h1>
+            <div className="flex flex-col gap-5">
+              <motion.p
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.8, ease: EASE, delay: 0.5 }}
+                className="text-primary/70 text-xs sm:text-sm md:text-base"
+                style={{ lineHeight: 1.2 }}
+              >
+                Docent is a swarm of six engineers: Architect, DevOps, Security,
+                Dependency, Cartographer, and Mentor. They read any repository
+                together, argue about what they find, and remember what changed
+                the next time you ask. Every call runs on the BTL Runtime.
+              </motion.p>
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.8, ease: EASE, delay: 0.7 }}
+              >
+                <Link
+                  href="/analyze"
+                  className="group inline-flex items-center gap-2 bg-primary rounded-full pl-5 pr-1.5 py-1.5 text-black font-medium text-sm sm:text-base transition-all hover:gap-3 w-fit"
                 >
-                  Docent is a swarm of six engineers: Architect, DevOps, Security,
-                  Dependency, Cartographer, and Mentor. They read any repository
-                  together, argue about what they find, and remember what changed
-                  the next time you ask. Every call runs on the BTL Runtime.
-                </motion.p>
-                <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.8, ease: EASE, delay: 0.7 }}
-                >
-                  <Link
-                    href="/analyze"
-                    className="group inline-flex items-center gap-2 bg-primary rounded-full pl-5 pr-1.5 py-1.5 text-black font-medium text-sm sm:text-base transition-all hover:gap-3 w-fit"
-                  >
-                    Analyze a repo
-                    <span className="bg-black rounded-full w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center transition-transform group-hover:scale-110">
-                      <ArrowRight size={16} className="text-[#E1E0CC]" />
-                    </span>
-                  </Link>
-                </motion.div>
-              </div>
+                  Analyze a repo
+                  <span className="bg-black rounded-full w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center transition-transform group-hover:scale-110">
+                    <ArrowRight size={16} className="text-[#E1E0CC]" />
+                  </span>
+                </Link>
+              </motion.div>
             </div>
           </div>
         </div>
