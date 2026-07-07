@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { marked } from 'marked';
 import {
   Building2, Terminal, ShieldCheck, Package, Map as MapIcon, Compass,
@@ -257,8 +258,10 @@ export default function AnalyzePage() {
       <div className="container pt-8">
         <header className="top flex flex-wrap items-end justify-between gap-3 pb-6">
           <div>
-            <h1 className="text-xl sm:text-2xl font-medium tracking-tight" style={{ color: '#E1E0CC' }}>
-              Docent<span className="text-primary">.</span>
+            <h1 className="text-xl sm:text-2xl font-medium tracking-tight">
+              <Link href="/" style={{ color: '#E1E0CC' }}>
+                Docent<span className="text-primary">.</span>
+              </Link>
             </h1>
             <span className="italic font-serif-italic text-primary/70 text-sm sm:text-base">point it at a repo and watch the team work</span>
           </div>
