@@ -4,7 +4,8 @@ import { simpleGit } from 'simple-git';
 import { btl, EMBED_MODEL, trackUsage } from './btl';
 import { upsertRepo, insertChunk, deleteChunks, setLastCommit, getChunks, type Repo } from './db';
 
-const REPOS_DIR = path.join(process.cwd(), 'data', 'repos');
+// Same volume-aware root as db.ts, so cloned repos live alongside the DB.
+const REPOS_DIR = path.join(process.env.RAILWAY_VOLUME_MOUNT_PATH || process.cwd(), 'data', 'repos');
 
 const SKIP_DIRS = new Set([
   '.git', 'node_modules', 'dist', 'build', '.next', 'vendor', 'target',

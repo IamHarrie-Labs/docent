@@ -6,9 +6,14 @@ import fs from 'fs';
 // workers import this module in parallel.
 let _db: Database.Database | null = null;
 
+// Railway sets this to whatever mount path a volume is attached at, so the
+// database survives redeploys instead of living in the container's throwaway
+// filesystem. Falls back to a local ./data dir for local dev / no volume.
+const DATA_ROOT = process.env.RAILWAY_VOLUME_MOUNT_PATH || process.cwd();
+
 function getDb(): Database.Database {
   if (_db) return _db;
-  const DATA_DIR = path.join(process.cwd(), 'data');
+  const DATA_DIR = path.join(DATA_ROOT, 'data');
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
   _db = new Database(path.join(DATA_DIR, 'docent.db'));
   _db.pragma('journal_mode = WAL');
