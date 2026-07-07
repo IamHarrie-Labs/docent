@@ -70,6 +70,13 @@ export default function DocsPage() {
               happen?&quot; gets answered with real file citations, pulled
               from the same semantic index the agents built.
             </p>
+            <p>
+              Everything is saved as you go, so closing the tab or coming
+              back tomorrow does not lose your analysis. There is also an
+              Export report button that bundles all six reports, the debate,
+              and the memory briefing into a single Markdown file you can
+              keep, share, or drop into another tool.
+            </p>
           </Section>
 
           <Section title="The team" delay={0.1}>

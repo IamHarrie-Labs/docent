@@ -8,6 +8,8 @@ Then they compare notes. **The Debate & Consensus** step reads all six reports a
 
 And the part nobody else does: **Docent remembers.** Analyze the repo again after fifty commits and The Historian tells you *what changed since its last visit* — "auth used to live in middleware, it moved to a service" — diffing its own past understanding against the new code. Ask it questions and it recalls previous conversations. It's not a docs generator; it's a codebase companion that gets smarter every time you return.
 
+Every report, the debate, and the memory briefing are saved as they're generated, so closing the tab or coming back tomorrow doesn't lose anything — reopening the analyze page restores your last session automatically. An **Export report** button bundles all of it (all six agent reports, the debate/consensus, the memory briefing) into a single Markdown file you can keep, share, or feed into another tool.
+
 Built solo in 48 hours for the **BTL Runtime Hackathon** (Jul 2026).
 
 **Live:** [trydocent-production.up.railway.app](https://trydocent-production.up.railway.app)
@@ -57,12 +59,14 @@ Next.js app
 ├── /docs            how it works
 ├── /api/analyze     SSE: clone → embed index → 6 parallel tool-use agents → debate/consensus + memory briefing
 ├── /api/chat        retrieval (BTL embeddings) + memory → streamed, cited answers
+├── /api/snapshot    fetch saved reports/debate/memory for a repo+commit → restores a session on reload
 ├── /api/usage       live cost meter
-└── SQLite (better-sqlite3)
-    ├── chunks       embedded code chunks per commit
-    ├── snapshots    each agent's report per commit  ← memory
-    ├── facts        durable knowledge extracted from analyses & chats
-    └── usage_events per-call token/cost ledger
+└── SQLite (better-sqlite3, on a Railway volume in production)
+    ├── repos         one row per analyzed repo, tracks last_commit + updated_at
+    ├── chunks        embedded code chunks per commit
+    ├── snapshots     every agent report, the debate, and the memory briefing per commit ← memory + export
+    ├── facts         durable knowledge extracted from analyses & chats
+    └── usage_events  per-call token/cost ledger
 ```
 
 Styling: Tailwind CSS v4 + Almarai (grotesque sans, via `next/font`) with Instrument Serif italic as an accent typeface, dark warm cream palette across all three pages, all agent output rendered through `marked` (full markdown, including tables and lists) instead of raw text.
