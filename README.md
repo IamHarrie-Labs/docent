@@ -10,6 +10,8 @@ And the part nobody else does: **Docent remembers.** Analyze the repo again afte
 
 Built solo in 48 hours for the **BTL Runtime Hackathon** (Jul 2026).
 
+**Live:** [trydocent-production.up.railway.app](https://trydocent-production.up.railway.app)
+
 ## Powered by the BTL Runtime
 
 Every LLM call goes through the BTL gateway at `api.badtheorylabs.com/v1`:
