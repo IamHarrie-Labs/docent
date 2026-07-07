@@ -37,101 +37,101 @@ html, body {
 
 /* --- Legacy dashboard classes (src/app/analyze/page.tsx), reskinned to the new palette --- */
 
-.container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+.container { max-width: 880px; margin: 0 auto; padding: 16px; }
 
 .meter {
-  display: flex; gap: 14px; align-items: center;
+  display: flex; gap: 10px; align-items: center;
   background: var(--color-card-2);
-  border-radius: 14px; padding: 7px 16px; font-family: var(--mono); font-size: 11px;
+  border-radius: 12px; padding: 6px 12px; font-family: var(--mono); font-size: 10px;
 }
-.meter .big { color: var(--color-primary); font-size: 14px; font-weight: 700; }
-.meter .lbl { color: var(--color-muted); font-size: 9.5px; text-transform: uppercase; letter-spacing: 1px; }
+.meter .big { color: var(--color-primary); font-size: 12.5px; font-weight: 700; }
+.meter .lbl { color: var(--color-muted); font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.6px; }
 .meter .grp { display: flex; flex-direction: column; align-items: flex-end; }
 
-.inputrow { display: flex; gap: 8px; margin-bottom: 14px; }
+.inputrow { display: flex; gap: 6px; margin-bottom: 10px; }
 .inputrow input {
   flex: 1; background: var(--color-card-2); border: 1px solid transparent;
-  color: var(--color-primary-2); border-radius: 14px; padding: 11px 16px; font-size: 13px;
+  color: var(--color-primary-2); border-radius: 12px; padding: 9px 14px; font-size: 12px;
   font-family: var(--mono); outline: none;
 }
 .inputrow input:focus { border-color: var(--color-gold); }
 .inputrow button {
   background: var(--color-primary);
   color: #000; font-weight: 700; border: none; border-radius: 999px;
-  padding: 10px 22px; font-size: 13px; cursor: pointer;
+  padding: 8px 18px; font-size: 12px; cursor: pointer;
 }
 .inputrow button:disabled { opacity: 0.5; cursor: default; }
 
 .phase {
-  font-family: var(--mono); font-size: 12.5px; color: var(--color-muted);
-  margin-bottom: 14px; min-height: 18px;
+  font-family: var(--mono); font-size: 11px; color: var(--color-muted);
+  margin-bottom: 10px; min-height: 16px;
 }
 .phase .ok { color: var(--color-primary); }
 .phase .er { color: var(--color-err); }
 
 .memorypane {
   background: linear-gradient(180deg, #191510, var(--color-card-2));
-  border-radius: 20px; padding: 18px 22px; margin-bottom: 16px;
+  border-radius: 16px; padding: 12px 16px; margin-bottom: 12px;
 }
-.memorypane h3 { color: var(--color-gold); font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+.memorypane h3 { color: var(--color-gold); font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 6px; }
 
 .debatepane {
   background: linear-gradient(180deg, #1c160c, var(--color-card-2));
-  border-radius: 20px; padding: 18px 22px; margin-bottom: 16px;
+  border-radius: 16px; padding: 12px 16px; margin-bottom: 12px;
 }
-.debatepane h3 { color: var(--color-warn); font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+.debatepane h3 { color: var(--color-warn); font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 6px; }
 
 .grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
-  margin-bottom: 16px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  margin-bottom: 12px;
 }
-@media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
 
 .pane {
-  background: var(--color-card-2); border-radius: 20px;
-  display: flex; flex-direction: column; min-height: 260px; max-height: 420px; overflow: hidden;
+  background: var(--color-card-2); border-radius: 16px;
+  display: flex; flex-direction: column; min-height: 180px; max-height: 280px; overflow: hidden;
 }
 .pane .hd {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 18px; border-bottom: 1px solid var(--color-border);
-  font-size: 12.5px; font-weight: 700; letter-spacing: 0.4px;
+  padding: 10px 14px; border-bottom: 1px solid var(--color-border);
+  font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
 }
-.pane .hd .status { font-size: 10.5px; font-family: var(--mono); color: var(--color-muted); }
+.pane .hd .status { font-size: 9px; font-family: var(--mono); color: var(--color-muted); }
 .pane .hd .status.running { color: var(--color-warn); }
 .pane .hd .status.done { color: var(--color-primary); }
 .pane .hd .status.error { color: var(--color-err); }
 .pane .body {
-  padding: 14px 18px; overflow-y: auto; flex: 1;
-  font-size: 12.8px; white-space: pre-wrap; word-break: break-word;
+  padding: 10px 14px; overflow-y: auto; flex: 1;
+  font-size: 11px; white-space: pre-wrap; word-break: break-word;
 }
-.pane .body .toolline { color: var(--color-muted); font-family: var(--mono); font-size: 11px; }
-.pane .body h1, .pane .body h2, .pane .body h3 { font-size: 13.5px; margin: 8px 0 4px; color: var(--color-primary); }
-.pane .body code { font-family: var(--mono); background: #1e1e1e; padding: 1px 5px; border-radius: 4px; font-size: 11.5px; }
-.pane .body pre { background: #0c0c0c; border: 1px solid var(--color-border); border-radius: 8px; padding: 10px; overflow-x: auto; margin: 6px 0; }
+.pane .body .toolline { color: var(--color-muted); font-family: var(--mono); font-size: 10px; }
+.pane .body h1, .pane .body h2, .pane .body h3 { font-size: 12px; margin: 6px 0 3px; color: var(--color-primary); }
+.pane .body code { font-family: var(--mono); background: #1e1e1e; padding: 1px 4px; border-radius: 4px; font-size: 10px; }
+.pane .body pre { background: #0c0c0c; border: 1px solid var(--color-border); border-radius: 6px; padding: 8px; overflow-x: auto; margin: 5px 0; }
 .pane .body pre code { background: none; padding: 0; }
 
-.mermaidbox { background: #fff; border-radius: 8px; padding: 8px; margin: 6px 0; overflow-x: auto; }
+.mermaidbox { background: #fff; border-radius: 8px; padding: 6px; margin: 5px 0; overflow-x: auto; }
 
 .chat {
-  background: var(--color-card-2); border-radius: 20px;
-  display: flex; flex-direction: column; height: 460px;
+  background: var(--color-card-2); border-radius: 16px;
+  display: flex; flex-direction: column; height: 340px;
 }
-.chat .hd { padding: 16px 20px; border-bottom: 1px solid var(--color-border); font-weight: 700; }
-.chat .hd span { color: var(--color-muted); font-weight: 400; font-size: 12px; margin-left: 8px; }
-.chat .msgs { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
-.msg { max-width: 82%; border-radius: 10px; padding: 9px 13px; font-size: 13px; white-space: pre-wrap; word-break: break-word; }
+.chat .hd { padding: 12px 16px; border-bottom: 1px solid var(--color-border); font-weight: 700; font-size: 13px; }
+.chat .hd span { color: var(--color-muted); font-weight: 400; font-size: 10.5px; margin-left: 6px; }
+.chat .msgs { flex: 1; overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.msg { max-width: 82%; border-radius: 10px; padding: 7px 11px; font-size: 12px; white-space: pre-wrap; word-break: break-word; }
 .msg.user { align-self: flex-end; background: #262626; }
 .msg.assistant { align-self: flex-start; background: var(--color-panel); border: 1px solid var(--color-border); }
-.chat .inrow { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--color-border); }
+.chat .inrow { display: flex; gap: 6px; padding: 10px; border-top: 1px solid var(--color-border); }
 .chat .inrow input {
   flex: 1; background: var(--color-panel); border: 1px solid var(--color-border); color: var(--color-primary-2);
-  border-radius: 8px; padding: 10px 14px; outline: none;
+  border-radius: 8px; padding: 8px 12px; font-size: 12px; outline: none;
 }
 .chat .inrow button {
   background: var(--color-primary); border: none; color: #000; font-weight: 700;
-  border-radius: 8px; padding: 10px 20px; cursor: pointer;
+  border-radius: 8px; padding: 8px 16px; font-size: 12px; cursor: pointer;
 }
 .chat .inrow button:disabled { opacity: 0.5; }
 
-footer { color: var(--color-muted); font-size: 11.5px; text-align: center; padding: 18px 0 8px; font-family: var(--mono); }
+footer { color: var(--color-muted); font-size: 10px; text-align: center; padding: 14px 0 6px; font-family: var(--mono); }
