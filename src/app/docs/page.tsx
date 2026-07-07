@@ -43,6 +43,16 @@ export default function DocsPage() {
             </div>
           </div>
 
+          <Section title="Try it now" delay={0}>
+            <p>
+              Docent is live at{' '}
+              <a href="https://trydocent-production.up.railway.app/analyze" className="text-primary underline" target="_blank" rel="noreferrer">
+                trydocent-production.up.railway.app
+              </a>
+              . Paste a public GitHub repo and watch the team work in real time, no setup needed.
+            </p>
+          </Section>
+
           <Section title="What it does" delay={0.05}>
             <p>
               You give Docent a GitHub URL. It clones the repo, indexes it into
@@ -110,6 +120,7 @@ export default function DocsPage() {
           </Section>
 
           <Section title="Run it locally" delay={0.25}>
+            <p>Want to run your own copy instead of using the hosted version above:</p>
             <Code>{`npm install
 cp .env.example .env   # add your BTL_API_KEY
 npm run dev             # http://localhost:3000`}</Code>

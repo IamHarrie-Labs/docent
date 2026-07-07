@@ -65,7 +65,9 @@ Next.js app
     └── usage_events per-call token/cost ledger
 ```
 
-Styling: Tailwind CSS v4 + Space Grotesk (grotesque sans, via `next/font`) with Instrument Serif italic as an accent typeface — dark, warm-cream palette across all three pages.
+Styling: Tailwind CSS v4 + Almarai (grotesque sans, via `next/font`) with Instrument Serif italic as an accent typeface, dark warm cream palette across all three pages, all agent output rendered through `marked` (full markdown, including tables and lists) instead of raw text.
+
+Deployed on Railway rather than Vercel: this app persists everything (SQLite, cloned repos, embeddings) to local disk and runs long streaming analyze requests, both of which need a long running process rather than ephemeral serverless functions.
 
 ## Team
 
