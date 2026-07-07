@@ -1,5 +1,5 @@
 import { btl, SYNTH_MODEL, trackUsage } from './btl';
-import type { Repo } from './db';
+import { saveSnapshot, type Repo } from './db';
 import type { AgentEvent } from './agents';
 import type { AgentDef } from './agents';
 
@@ -10,6 +10,7 @@ import type { AgentDef } from './agents';
  */
 export async function generateDebate(
   repo: Repo,
+  sha: string,
   reports: { def: AgentDef; report: string }[],
   emit: (e: AgentEvent) => void,
 ): Promise<string> {
@@ -47,6 +48,7 @@ Use at most one or two headers to separate these three parts. Be specific and ho
     }
   }
 
+  saveSnapshot(repo.id, sha, 'debate', debate);
   emit({ agent: 'debate', type: 'done', data: debate });
   return debate;
 }

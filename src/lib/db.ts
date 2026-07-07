@@ -14,6 +14,13 @@ function getDb(): Database.Database {
   _db.pragma('journal_mode = WAL');
   _db.pragma('busy_timeout = 5000');
   _db.exec(SCHEMA);
+  // created_at is insert-time only; this tracks last analysis so "most recent
+  // repo" (used to restore a session) reflects actual activity, not row age.
+  // SQLite disallows a non-constant DEFAULT in ADD COLUMN, so backfill separately.
+  try {
+    _db.exec(`ALTER TABLE repos ADD COLUMN updated_at TEXT`);
+    _db.exec(`UPDATE repos SET updated_at = created_at WHERE updated_at IS NULL`);
+  } catch { /* column already exists */ }
   return _db;
 }
 
@@ -24,7 +31,8 @@ CREATE TABLE IF NOT EXISTS repos (
   name TEXT NOT NULL,
   local_path TEXT NOT NULL,
   last_commit TEXT,
-  created_at TEXT DEFAULT (datetime('now'))
+  created_at TEXT DEFAULT (datetime('now')),
+  updated_at TEXT DEFAULT (datetime('now'))
 );
 
 CREATE TABLE IF NOT EXISTS chunks (
@@ -94,7 +102,7 @@ export interface Repo {
 export function upsertRepo(url: string, name: string, localPath: string): Repo {
   getDb().prepare(
     `INSERT INTO repos (url, name, local_path) VALUES (?, ?, ?)
-     ON CONFLICT(url) DO UPDATE SET local_path = excluded.local_path`,
+     ON CONFLICT(url) DO UPDATE SET local_path = excluded.local_path, updated_at = datetime('now')`,
   ).run(url, name, localPath);
   return getDb().prepare('SELECT * FROM repos WHERE url = ?').get(url) as Repo;
 }
@@ -104,11 +112,11 @@ export function getRepo(id: number): Repo | undefined {
 }
 
 export function listRepos(): Repo[] {
-  return getDb().prepare('SELECT * FROM repos ORDER BY created_at DESC').all() as Repo[];
+  return getDb().prepare('SELECT * FROM repos ORDER BY updated_at DESC, created_at DESC').all() as Repo[];
 }
 
 export function setLastCommit(repoId: number, sha: string) {
-  getDb().prepare('UPDATE repos SET last_commit = ? WHERE id = ?').run(sha, repoId);
+  getDb().prepare(`UPDATE repos SET last_commit = ?, updated_at = datetime('now') WHERE id = ?`).run(sha, repoId);
 }
 
 export function insertChunk(

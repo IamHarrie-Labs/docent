@@ -140,6 +140,40 @@ export default function AnalyzePage() {
     if (el) el.scrollTop = el.scrollHeight;
   }, [chat]);
 
+  // Restore the most recent analysis on load, so chat and the reports still
+  // work after a refresh instead of only existing for the life of the tab.
+  useEffect(() => {
+    (async () => {
+      try {
+        const reposRes = await fetch('/api/repos');
+        if (!reposRes.ok) return;
+        const { repos } = await reposRes.json();
+        const last = repos?.[0];
+        if (!last?.last_commit) return;
+
+        const snapRes = await fetch(`/api/snapshot?repoId=${last.id}&sha=${last.last_commit}`);
+        if (!snapRes.ok) return;
+        const { snapshots } = await snapRes.json() as { snapshots: { agent: string; report: string }[] };
+        if (!snapshots?.length) return;
+
+        setUrl(last.url);
+        setRepoId(last.id);
+        setSha(last.last_commit);
+        setPhase('Restored last session');
+        setPhaseKind('ok');
+
+        const restoredPanes: Record<string, PaneState> = {};
+        for (const s of snapshots) {
+          if (s.agent === 'memory') setMemory({ id: 'memory', title: 'Memory', status: 'done', text: s.report, tools: [] });
+          else if (s.agent === 'debate') setDebate({ id: 'debate', title: 'Debate', status: 'done', text: s.report, tools: [] });
+          else restoredPanes[s.agent] = { id: s.agent, title: AGENT_TITLES[s.agent] ?? s.agent, status: 'done', text: s.report, tools: [] };
+        }
+        if (Object.keys(restoredPanes).length) setPanes(restoredPanes);
+      } catch { /* nothing to restore, start fresh */ }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const updatePane = useCallback((id: string, fn: (p: PaneState) => PaneState) => {
     if (id === 'memory') {
       setMemory((prev) => fn(prev ?? { id: 'memory', title: 'Memory', status: 'running', text: '', tools: [] }));
@@ -253,6 +287,30 @@ export default function AnalyzePage() {
 
   const paneList = Object.values(panes);
 
+  const exportReport = useCallback(() => {
+    const parts: string[] = [];
+    parts.push(`# Docent report: ${url || 'repository'}`);
+    parts.push(`Commit: ${sha ?? 'unknown'}  \nGenerated: ${new Date().toISOString()}`);
+    if (usage) {
+      parts.push(`Cost so far: $${usage.est_cost_usd.toFixed(4)} across ${usage.calls} runtime calls (${(usage.prompt_tokens + usage.completion_tokens).toLocaleString()} tokens).`);
+    }
+    if (debate?.text) parts.push(`## Team debate and consensus\n\n${debate.text}`);
+    if (memory?.text) parts.push(`## The Historian: what changed since the last visit\n\n${memory.text}`);
+    for (const p of paneList) {
+      if (p.text) parts.push(`## ${p.title}\n\n${p.text}`);
+    }
+
+    const blob = new Blob([parts.join('\n\n---\n\n')], { type: 'text/markdown' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    const slug = (url || 'docent-report').replace(/^https?:\/\//, '').replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+    a.download = `${slug || 'docent-report'}.md`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }, [url, sha, usage, debate, memory, paneList]);
+
+  const hasReport = paneList.length > 0 || !!debate || !!memory;
+
   return (
     <div className="relative min-h-screen bg-black">
       <div className="container pt-8">
@@ -265,10 +323,17 @@ export default function AnalyzePage() {
             </h1>
             <span className="italic font-serif-italic text-primary/70 text-sm sm:text-base">point it at a repo and watch the team work</span>
           </div>
-          <div className="meter" title="Estimated from per-call usage returned by the BTL runtime">
-            <div className="grp"><span className="big">${(usage?.est_cost_usd ?? 0).toFixed(4)}</span><span className="lbl">est. cost</span></div>
-            <div className="grp"><span>{((usage?.prompt_tokens ?? 0) + (usage?.completion_tokens ?? 0)).toLocaleString()}</span><span className="lbl">tokens</span></div>
-            <div className="grp"><span>{usage?.calls ?? 0}</span><span className="lbl">runtime calls</span></div>
+          <div className="flex items-center gap-3">
+            {hasReport && (
+              <button className="exportbtn" onClick={exportReport} title="Download every report, the debate, and the memory briefing as one file">
+                Export report
+              </button>
+            )}
+            <div className="meter" title="Estimated from per-call usage returned by the BTL runtime">
+              <div className="grp"><span className="big">${(usage?.est_cost_usd ?? 0).toFixed(4)}</span><span className="lbl">est. cost</span></div>
+              <div className="grp"><span>{((usage?.prompt_tokens ?? 0) + (usage?.completion_tokens ?? 0)).toLocaleString()}</span><span className="lbl">tokens</span></div>
+              <div className="grp"><span>{usage?.calls ?? 0}</span><span className="lbl">runtime calls</span></div>
+            </div>
           </div>
         </header>
 

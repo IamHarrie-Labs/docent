@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
 
         // The team debate needs every report in hand, so it runs after the swarm finishes.
         if (reports.length > 1) {
-          await generateDebate(repo, reports, emit).catch((e) => {
+          await generateDebate(repo, sha, reports, emit).catch((e) => {
             emit({ agent: 'debate', type: 'error', data: String(e?.message ?? e) });
           });
         }

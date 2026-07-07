@@ -1,6 +1,6 @@
 import { simpleGit } from 'simple-git';
 import { btl, SYNTH_MODEL, trackUsage } from './btl';
-import { getSnapshots, getPreviousAnalyzedCommit, addFact, getFacts, type Repo } from './db';
+import { getSnapshots, getPreviousAnalyzedCommit, addFact, getFacts, saveSnapshot, type Repo } from './db';
 import type { AgentEvent } from './agents';
 
 /**
@@ -64,6 +64,7 @@ Be specific and evidence-based; use the diff and your prior reports. If the diff
   }
 
   addFact(repo.id, `Analyzed at ${newSha.slice(0, 8)} (previously ${prevSha.slice(0, 8)}): ${briefing.slice(0, 300)}`, 'memory', newSha);
+  saveSnapshot(repo.id, newSha, 'memory', briefing);
   emit({ agent: 'memory', type: 'done', data: briefing });
   return briefing;
 }
