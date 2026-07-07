@@ -12,15 +12,13 @@
   --color-gold: #c9a15a;
   --color-warn: #d4a24c;
   --color-err: #c96b56;
-  --font-sans: var(--font-grotesk), 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-sans: var(--font-almarai), 'Segoe UI', system-ui, -apple-system, sans-serif;
   --font-serif-italic: var(--font-serif-italic), 'Instrument Serif', serif;
 }
 
 :root {
   --mono: ui-monospace, 'Cascadia Code', 'JetBrains Mono', Consolas, monospace;
 }
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
   background: var(--color-bg);

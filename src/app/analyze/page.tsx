@@ -250,8 +250,8 @@ export default function AnalyzePage() {
         <ArrowLeft size={14} /> Back
       </Link>
 
-      <header className="top flex items-center justify-between py-1.5 pb-4">
-        <div className="flex items-baseline gap-2.5">
+      <header className="top flex flex-wrap items-center justify-between gap-3 py-1.5 pb-4">
+        <div className="flex flex-wrap items-baseline gap-2.5">
           <h1 className="text-xl tracking-tight">Docent<span className="text-primary">.</span></h1>
           <span className="text-muted text-[12.5px]">point it at a repo and watch the team work</span>
         </div>
@@ -264,7 +264,7 @@ export default function AnalyzePage() {
 
       <div className="inputrow">
         <input
-          placeholder="https://github.com/owner/repo — paste any repository"
+          placeholder="https://github.com/owner/repo, paste any repository"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && analyze()}
@@ -286,7 +286,7 @@ export default function AnalyzePage() {
 
       {memory && (
         <div className="memorypane">
-          <h3>🧠 The Historian — what changed since my last visit</h3>
+          <h3>🧠 The Historian, what changed since my last visit</h3>
           <div dangerouslySetInnerHTML={{ __html: mdToHtml(memory.text) }} />
         </div>
       )}

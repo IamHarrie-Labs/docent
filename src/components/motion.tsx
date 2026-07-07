@@ -107,7 +107,34 @@ export function FadeUp({
   );
 }
 
-/** One character of a scroll-revealed paragraph — opacity ramps as the page scrolls past it. */
+const CARD_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
+/** Feature card entrance: scale up from 0.95 plus fade, staggered, once in view. */
+export function CardReveal({
+  children,
+  delay = 0,
+  className = '',
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: '-100px' });
+  return (
+    <motion.div
+      ref={ref}
+      className={className}
+      initial={{ scale: 0.95, opacity: 0 }}
+      animate={inView ? { scale: 1, opacity: 1 } : {}}
+      transition={{ duration: 0.7, ease: CARD_EASE, delay }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/** One character of a scroll-revealed paragraph, opacity ramps as the page scrolls past it. */
 function AnimatedLetter({ char, progress, index, total }: { char: string; progress: MotionValue<number>; index: number; total: number }) {
   const charProgress = index / total;
   const opacity = useTransform(progress, [charProgress - 0.1, charProgress + 0.05], [0.2, 1]);
