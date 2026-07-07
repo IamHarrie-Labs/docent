@@ -2,64 +2,28 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Bot, Brain, MessagesSquare, Check } from 'lucide-react';
+import { ArrowRight, Check } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { WordsPullUp, WordsPullUpMultiStyle, ScrollRevealText, CardReveal } from '@/components/motion';
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
-const NODES: { x: number; y: number }[] = [
-  { x: 12, y: 22 }, { x: 30, y: 12 }, { x: 52, y: 18 }, { x: 70, y: 10 }, { x: 85, y: 24 },
-  { x: 18, y: 45 }, { x: 40, y: 38 }, { x: 60, y: 44 }, { x: 80, y: 50 }, { x: 92, y: 40 },
-  { x: 10, y: 68 }, { x: 28, y: 75 }, { x: 48, y: 66 }, { x: 66, y: 72 }, { x: 82, y: 78 }, { x: 95, y: 65 },
-];
+const HERO_VIDEO = 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260405_170732_8a9ccda6-5cff-4628-b164-059c500a2b41.mp4';
+const CARD1_VIDEO = 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260406_133058_0504132a-0cf3-4450-a370-8ea3b05c95d4.mp4';
+const ICON_SWARM = 'https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260405_171918_4a5edc79-d78f-4637-ac8b-53c43c220606.png&w=1280&q=85';
+const ICON_DEBATE = 'https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260405_171741_ed9845ab-f5b2-4018-8ce7-07cc01823522.png&w=1280&q=85';
+const ICON_MEMORY = 'https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260405_171809_f56666dc-c099-4778-ad82-9ad4f209567b.png&w=1280&q=85';
 
-const EDGES: [number, number][] = [
-  [0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [1, 6], [2, 7], [3, 8], [4, 9],
-  [5, 6], [6, 7], [7, 8], [8, 9], [5, 10], [6, 11], [7, 12], [8, 13], [9, 14],
-  [10, 11], [11, 12], [12, 13], [13, 14], [14, 15], [9, 15],
-];
-
-/** Ambient visual standing in for footage: a slow drifting network, in place of stock video. */
-function SwarmField() {
+function BgVideo({ src }: { src: string }) {
   return (
-    <div className="absolute inset-0 overflow-hidden bg-black">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,#1c1c1c_0%,#000_75%)]" />
-      <motion.svg
-        viewBox="0 0 100 100"
-        preserveAspectRatio="none"
-        className="absolute inset-0 w-full h-full"
-        animate={{ rotate: [0, 2, 0, -2, 0] }}
-        transition={{ duration: 40, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ transformOrigin: '50% 50%' }}
-      >
-        {EDGES.map(([a, b], i) => (
-          <motion.line
-            key={i}
-            x1={NODES[a].x} y1={NODES[a].y} x2={NODES[b].x} y2={NODES[b].y}
-            stroke="#DEDBC8" strokeWidth={0.15}
-            initial={{ opacity: 0.05 }}
-            animate={{ opacity: [0.05, 0.22, 0.05] }}
-            transition={{ duration: 6, repeat: Infinity, delay: (i % 8) * 0.4, ease: 'easeInOut' }}
-          />
-        ))}
-        {NODES.map((n, i) => (
-          <motion.circle
-            key={i}
-            cx={n.x} cy={n.y} r={0.6}
-            fill="#DEDBC8"
-            initial={{ opacity: 0.2 }}
-            animate={{ opacity: [0.2, 0.9, 0.2], r: [0.5, 0.9, 0.5] }}
-            transition={{ duration: 4, repeat: Infinity, delay: (i % 6) * 0.5, ease: 'easeInOut' }}
-          />
-        ))}
-      </motion.svg>
-      <motion.div
-        className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent"
-        animate={{ left: ['-40%', '110%'] }}
-        transition={{ duration: 9, repeat: Infinity, ease: 'linear', repeatDelay: 2 }}
-      />
-    </div>
+    <video
+      src={src}
+      autoPlay
+      loop
+      muted
+      playsInline
+      className="absolute inset-0 w-full h-full object-cover"
+    />
   );
 }
 
@@ -72,16 +36,15 @@ function FeatureCard({
 }: {
   n: string;
   title: string;
-  icon: React.ReactNode;
+  icon: string;
   items: string[];
   delay: number;
 }) {
   return (
     <CardReveal delay={delay} className="bg-card-2 rounded-2xl p-6 flex flex-col justify-between h-full">
       <div>
-        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-black/40 flex items-center justify-center text-primary mb-5">
-          {icon}
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={icon} alt="" className="w-10 h-10 sm:w-12 sm:h-12 rounded object-cover mb-5" />
         <div className="text-primary/50 text-xs mb-1 font-mono">{n}</div>
         <h3 className="text-primary-2 text-lg sm:text-xl font-medium mb-4">{title}</h3>
         <ul className="space-y-2.5 mb-6">
@@ -107,9 +70,9 @@ export default function Home() {
       {/* HERO */}
       <section className="h-screen p-4 md:p-6">
         <div className="relative w-full h-full rounded-2xl md:rounded-[2rem] overflow-hidden bg-black">
-          <SwarmField />
+          <BgVideo src={HERO_VIDEO} />
           <div className="noise-overlay absolute inset-0 opacity-[0.7] mix-blend-overlay pointer-events-none" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/70" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
 
           <Navbar />
 
@@ -205,8 +168,8 @@ export default function Home() {
 
           <div id="memory" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-2 md:gap-1 lg:h-[480px]">
             <CardReveal delay={0} className="rounded-2xl overflow-hidden relative bg-card min-h-[220px] lg:h-full">
-              <SwarmField />
-              <div className="absolute inset-0 flex items-end p-6">
+              <BgVideo src={CARD1_VIDEO} />
+              <div className="absolute inset-0 flex items-end p-6 bg-gradient-to-t from-black/50 via-transparent to-transparent">
                 <span className="text-lg font-medium" style={{ color: '#E1E0CC' }}>
                   Six minds, one repo.
                 </span>
@@ -216,7 +179,7 @@ export default function Home() {
             <FeatureCard
               n="01"
               title="The Swarm."
-              icon={<Bot size={20} />}
+              icon={ICON_SWARM}
               delay={0.15}
               items={[
                 'The Architect maps structure and data flow, citing path and line.',
@@ -228,7 +191,7 @@ export default function Home() {
             <FeatureCard
               n="02"
               title="The Debate."
-              icon={<MessagesSquare size={20} />}
+              icon={ICON_DEBATE}
               delay={0.3}
               items={[
                 'Reviews all six reports for real tension between findings.',
@@ -239,7 +202,7 @@ export default function Home() {
             <FeatureCard
               n="03"
               title="The Memory."
-              icon={<Brain size={20} />}
+              icon={ICON_MEMORY}
               delay={0.45}
               items={[
                 'Diffs new commits against its own past understanding.',
