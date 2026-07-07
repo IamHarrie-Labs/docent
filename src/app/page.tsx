@@ -1,318 +1,226 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { ArrowRight, Bot, Brain, MessagesSquare, Check } from 'lucide-react';
+import { Navbar } from '@/components/Navbar';
+import { WordsPullUp, WordsPullUpMultiStyle, ScrollRevealText, FadeUp } from '@/components/motion';
 
-interface PaneState {
-  id: string;
-  title: string;
-  status: 'idle' | 'running' | 'done' | 'error';
-  text: string;
-  tools: string[];
-}
+const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
-interface Usage { calls: number; prompt_tokens: number; completion_tokens: number; est_cost_usd: number }
-
-const AGENT_TITLES: Record<string, string> = {
-  architecture: '🏗️ The Architect',
-  quickstart: '🛠️ The DevOps Engineer',
-  config: '🔒 The Security Engineer',
-  dependencies: '📦 The Dependency Engineer',
-  diagram: '🗺️ The Systems Cartographer',
-  tour: '🧭 The Mentor',
-};
-
-// Minimal markdown → HTML (headers, bold, inline/blocks of code) for pane rendering.
-function mdToHtml(md: string): string {
-  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  let out = esc(md);
-  out = out.replace(/```(\w*)\n([\s\S]*?)```/g, (_m, _lang, code) => `<pre><code>${code}</code></pre>`);
-  out = out.replace(/`([^`\n]+)`/g, '<code>$1</code>');
-  out = out.replace(/^### (.*)$/gm, '<h3>$1</h3>');
-  out = out.replace(/^## (.*)$/gm, '<h2>$1</h2>');
-  out = out.replace(/^# (.*)$/gm, '<h1>$1</h1>');
-  out = out.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
-  return out;
-}
-
-function extractMermaid(md: string): string | null {
-  const fenced = md.match(/```mermaid\n([\s\S]*?)```/);
-  if (fenced) return fenced[1];
-  // Model sometimes omits the fence — fall back to the bare diagram block.
-  const bare = md.match(/((?:graph|flowchart|sequenceDiagram|classDiagram)\s[\s\S]*?)(?:\n\n(?:[A-Z#-]|$)|$)/);
-  return bare ? bare[1] : null;
-}
-
-// Once the diagram is rendered as SVG, drop the raw source from the text below it.
-function stripMermaidSource(md: string): string {
-  return md
-    .replace(/```mermaid\n[\s\S]*?```/, '')
-    .replace(/(?:graph|flowchart|sequenceDiagram|classDiagram)\s[\s\S]*?(?=\n\n(?:[A-Z#-]|$)|$)/, '');
-}
-
-let mermaidMod: { render: (id: string, src: string) => Promise<{ svg: string }> } | null = null;
-async function renderMermaid(src: string): Promise<string | null> {
-  try {
-    if (!mermaidMod) {
-      const m = await import(/* webpackIgnore: true */ 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs' as string);
-      m.default.initialize({ startOnLoad: false, theme: 'neutral' });
-      mermaidMod = m.default;
-    }
-    const { svg } = await mermaidMod!.render(`mmd_${Date.now()}`, src);
-    return svg;
-  } catch { return null; }
-}
-
-function Pane({ pane }: { pane: PaneState }) {
-  const bodyRef = useRef<HTMLDivElement>(null);
-  const [svg, setSvg] = useState<string | null>(null);
-
-  useEffect(() => {
-    const el = bodyRef.current;
-    if (el && pane.status === 'running') el.scrollTop = el.scrollHeight;
-  }, [pane.text, pane.tools.length, pane.status]);
-
-  useEffect(() => {
-    if (pane.id === 'diagram' && pane.status === 'done') {
-      const src = extractMermaid(pane.text);
-      if (src) renderMermaid(src).then(setSvg);
-    }
-  }, [pane.status, pane.id, pane.text]);
-
+/** Ambient swarm visual for the hero — no stock footage, just orbiting nodes on a dark field. */
+function SwarmField() {
+  const nodes = [
+    { x: '20%', y: '30%', d: 0 },
+    { x: '68%', y: '18%', d: 0.6 },
+    { x: '82%', y: '55%', d: 1.2 },
+    { x: '40%', y: '68%', d: 1.8 },
+    { x: '58%', y: '42%', d: 2.4 },
+    { x: '15%', y: '75%', d: 3 },
+  ];
   return (
-    <div className="pane">
-      <div className="hd">
-        <span>{pane.title}</span>
-        <span className={`status ${pane.status}`}>
-          {pane.status === 'running' ? '● streaming' : pane.status === 'done' ? '✓ done' : pane.status === 'error' ? '✗ error' : 'idle'}
-        </span>
-      </div>
-      <div className="body" ref={bodyRef}>
-        {pane.tools.length > 0 && pane.status === 'running' && (
-          <div className="toolline">{pane.tools.slice(-3).map((t, i) => <div key={i}>⚙ {t}</div>)}</div>
-        )}
-        {svg ? <div className="mermaidbox" dangerouslySetInnerHTML={{ __html: svg }} /> : null}
-        <div dangerouslySetInnerHTML={{ __html: mdToHtml(svg ? stripMermaidSource(pane.text) : pane.text) }} />
-      </div>
+    <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,#1a1a1a_0%,#000_70%)]" />
+      {nodes.map((n, i) => (
+        <motion.div
+          key={i}
+          className="absolute w-2 h-2 rounded-full bg-primary/60"
+          style={{ left: n.x, top: n.y }}
+          animate={{ opacity: [0.2, 0.9, 0.2], scale: [1, 1.6, 1] }}
+          transition={{ duration: 4, repeat: Infinity, delay: n.d, ease: 'easeInOut' }}
+        />
+      ))}
     </div>
   );
 }
 
-export default function Home() {
-  const [url, setUrl] = useState('');
-  const [running, setRunning] = useState(false);
-  const [phase, setPhase] = useState('');
-  const [phaseKind, setPhaseKind] = useState<'ok' | 'er' | ''>('');
-  const [panes, setPanes] = useState<Record<string, PaneState>>({});
-  const [memory, setMemory] = useState<PaneState | null>(null);
-  const [debate, setDebate] = useState<PaneState | null>(null);
-  const [repoId, setRepoId] = useState<number | null>(null);
-  const [sha, setSha] = useState<string | null>(null);
-  const [usage, setUsage] = useState<Usage | null>(null);
-  const [chat, setChat] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);
-  const [chatInput, setChatInput] = useState('');
-  const [chatBusy, setChatBusy] = useState(false);
-  const msgsRef = useRef<HTMLDivElement>(null);
-
-  // Live cost meter
-  useEffect(() => {
-    const t = setInterval(async () => {
-      try {
-        const r = await fetch('/api/usage');
-        if (r.ok) setUsage(await r.json());
-      } catch { /* server not up yet */ }
-    }, 2000);
-    return () => clearInterval(t);
-  }, []);
-
-  useEffect(() => {
-    const el = msgsRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, [chat]);
-
-  const updatePane = useCallback((id: string, fn: (p: PaneState) => PaneState) => {
-    if (id === 'memory') {
-      setMemory((prev) => fn(prev ?? { id: 'memory', title: 'Memory', status: 'running', text: '', tools: [] }));
-    } else if (id === 'debate') {
-      setDebate((prev) => fn(prev ?? { id: 'debate', title: 'Debate', status: 'running', text: '', tools: [] }));
-    } else {
-      setPanes((prev) => ({
-        ...prev,
-        [id]: fn(prev[id] ?? { id, title: AGENT_TITLES[id] ?? id, status: 'idle', text: '', tools: [] }),
-      }));
-    }
-  }, []);
-
-  const analyze = useCallback(async () => {
-    if (!url.trim() || running) return;
-    setRunning(true);
-    setPanes({});
-    setMemory(null);
-    setDebate(null);
-    setPhase('Starting…');
-    setPhaseKind('');
-
-    try {
-      const res = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: url.trim() }),
-      });
-      if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buf = '';
-
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-
-        let idx: number;
-        while ((idx = buf.indexOf('\n\n')) !== -1) {
-          const raw = buf.slice(0, idx);
-          buf = buf.slice(idx + 2);
-          const evLine = raw.split('\n').find((l) => l.startsWith('event: '));
-          const dataLine = raw.split('\n').find((l) => l.startsWith('data: '));
-          if (!evLine || !dataLine) continue;
-          const event = evLine.slice(7).trim();
-          let data: Record<string, unknown>;
-          try { data = JSON.parse(dataLine.slice(6)); } catch { continue; }
-
-          if (event === 'phase') {
-            const p = data as { phase: string; detail: string; repoId?: number; sha?: string; agents?: { id: string; title: string }[] };
-            setPhase(p.detail ?? p.phase);
-            setPhaseKind(p.phase === 'error' ? 'er' : p.phase === 'done' ? 'ok' : '');
-            if (p.repoId) setRepoId(p.repoId);
-            if (p.sha) setSha(p.sha);
-            if (p.agents) {
-              const init: Record<string, PaneState> = {};
-              for (const a of p.agents) init[a.id] = { id: a.id, title: AGENT_TITLES[a.id] ?? a.title, status: 'running', text: '', tools: [] };
-              setPanes(init);
-            }
-          } else if (event === 'agent') {
-            const e = data as { agent: string; type: string; data: string };
-            if (e.type === 'token') updatePane(e.agent, (p) => ({ ...p, status: 'running', text: p.text + e.data }));
-            else if (e.type === 'tool') updatePane(e.agent, (p) => ({ ...p, status: 'running', text: '', tools: [...p.tools, e.data] }));
-            else if (e.type === 'done') updatePane(e.agent, (p) => ({ ...p, status: 'done', text: e.data }));
-            else if (e.type === 'error') updatePane(e.agent, (p) => ({ ...p, status: 'error', text: p.text + `\n[${e.data}]` }));
-            else if (e.type === 'status') updatePane(e.agent, (p) => ({ ...p, status: 'running', text: e.data + '\n' }));
-          }
-        }
-      }
-    } catch (e) {
-      setPhase(`Failed: ${e instanceof Error ? e.message : String(e)}`);
-      setPhaseKind('er');
-    } finally {
-      setRunning(false);
-    }
-  }, [url, running, updatePane]);
-
-  const sendChat = useCallback(async () => {
-    const q = chatInput.trim();
-    if (!q || chatBusy || !repoId || !sha) return;
-    setChatInput('');
-    setChat((c) => [...c, { role: 'user', content: q }, { role: 'assistant', content: '' }]);
-    setChatBusy(true);
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ repoId, sha, message: q }),
-      });
-      if (!res.body) throw new Error('no stream');
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const tok = decoder.decode(value, { stream: true });
-        setChat((c) => {
-          const copy = [...c];
-          copy[copy.length - 1] = { role: 'assistant', content: copy[copy.length - 1].content + tok };
-          return copy;
-        });
-      }
-    } catch (e) {
-      setChat((c) => [...c, { role: 'assistant', content: `[error: ${e instanceof Error ? e.message : e}]` }]);
-    } finally {
-      setChatBusy(false);
-    }
-  }, [chatInput, chatBusy, repoId, sha]);
-
-  const paneList = Object.values(panes);
-
+function FeatureCard({
+  n,
+  title,
+  icon,
+  items,
+  delay,
+}: {
+  n: string;
+  title: string;
+  icon: React.ReactNode;
+  items: string[];
+  delay: number;
+}) {
   return (
-    <div className="container">
-      <header className="top">
-        <div className="brand">
-          <h1>Docent<span className="dot">.</span></h1>
-          <span className="tag">a living onboarding portal for any codebase · powered by BTL Runtime</span>
+    <FadeUp delay={delay} className="bg-card-2 rounded-2xl p-6 flex flex-col justify-between h-full">
+      <div>
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-black/40 flex items-center justify-center text-primary mb-5">
+          {icon}
         </div>
-        <div className="meter" title="Estimated from per-call usage returned by the BTL runtime">
-          <div className="grp"><span className="big">${(usage?.est_cost_usd ?? 0).toFixed(4)}</span><span className="lbl">est. cost</span></div>
-          <div className="grp"><span>{((usage?.prompt_tokens ?? 0) + (usage?.completion_tokens ?? 0)).toLocaleString()}</span><span className="lbl">tokens</span></div>
-          <div className="grp"><span>{usage?.calls ?? 0}</span><span className="lbl">runtime calls</span></div>
-        </div>
-      </header>
-
-      <div className="inputrow">
-        <input
-          placeholder="https://github.com/owner/repo — paste any repository"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && analyze()}
-          disabled={running}
-        />
-        <button onClick={analyze} disabled={running || !url.trim()}>
-          {running ? 'Analyzing…' : 'Analyze'}
-        </button>
+        <div className="text-primary/50 text-xs mb-1 font-mono">{n}</div>
+        <h3 className="text-primary-2 text-lg sm:text-xl font-medium mb-4">{title}</h3>
+        <ul className="space-y-2.5 mb-6">
+          {items.map((it, i) => (
+            <li key={i} className="flex items-start gap-2 text-sm text-gray-400">
+              <Check size={15} className="text-primary mt-0.5 shrink-0" />
+              <span>{it}</span>
+            </li>
+          ))}
+        </ul>
       </div>
+      <Link href="/docs" className="group inline-flex items-center gap-1.5 text-sm text-primary w-fit">
+        Learn more
+        <ArrowRight size={15} className="-rotate-45 transition-transform group-hover:translate-x-0.5" />
+      </Link>
+    </FadeUp>
+  );
+}
 
-      <div className="phase"><span className={phaseKind}>{phase}</span></div>
+export default function Home() {
+  return (
+    <main style={{ color: '#E1E0CC' }}>
+      {/* HERO */}
+      <section className="h-screen p-4 md:p-6">
+        <div className="relative w-full h-full rounded-2xl md:rounded-[2rem] overflow-hidden bg-black">
+          <SwarmField />
+          <div className="noise-overlay absolute inset-0 opacity-[0.7] mix-blend-overlay pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/70" />
 
-      {memory && (
-        <div className="memorypane">
-          <h3>🧠 The Historian — what changed since my last visit</h3>
-          <div dangerouslySetInnerHTML={{ __html: mdToHtml(memory.text) }} />
-        </div>
-      )}
+          <Navbar />
 
-      {debate && (
-        <div className="debatepane">
-          <h3>🗣️ Team Debate &amp; Consensus</h3>
-          <div dangerouslySetInnerHTML={{ __html: mdToHtml(debate.text) }} />
-        </div>
-      )}
-
-      {paneList.length > 0 && (
-        <div className="grid">
-          {paneList.map((p) => <Pane key={p.id} pane={p} />)}
-        </div>
-      )}
-
-      {repoId && sha && (
-        <div className="chat">
-          <div className="hd">💬 Ask the codebase <span>retrieval + persistent memory · remembers across sessions</span></div>
-          <div className="msgs" ref={msgsRef}>
-            {chat.map((m, i) => (
-              <div key={i} className={`msg ${m.role}`} dangerouslySetInnerHTML={{ __html: mdToHtml(m.content) }} />
-            ))}
+          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12 pb-10 md:pb-14">
+            <div className="grid grid-cols-12 gap-4 items-end">
+              <div className="col-span-12 lg:col-span-8">
+                <h1 className="select-none" style={{ color: '#E1E0CC' }}>
+                  <WordsPullUp
+                    text="Docent"
+                    showAsterisk
+                    className="text-[26vw] sm:text-[24vw] md:text-[22vw] lg:text-[20vw] xl:text-[19vw] 2xl:text-[20vw] font-medium leading-[0.85] tracking-[-0.07em]"
+                  />
+                </h1>
+              </div>
+              <div className="col-span-12 lg:col-span-4 flex flex-col gap-5 lg:pb-6">
+                <motion.p
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.8, ease: EASE, delay: 0.5 }}
+                  className="text-primary/70 text-xs sm:text-sm md:text-base"
+                  style={{ lineHeight: 1.2 }}
+                >
+                  Docent is a swarm of six engineers — Architect, DevOps, Security, Dependency,
+                  Cartographer, Mentor — who read any repository together, argue about what they
+                  find, and remember what changed the next time you ask. Every call runs on the
+                  BTL Runtime.
+                </motion.p>
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.8, ease: EASE, delay: 0.7 }}
+                >
+                  <Link
+                    href="/analyze"
+                    className="group inline-flex items-center gap-2 bg-primary rounded-full pl-5 pr-1.5 py-1.5 text-black font-medium text-sm sm:text-base transition-all hover:gap-3 w-fit"
+                  >
+                    Analyze a repo
+                    <span className="bg-black rounded-full w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center transition-transform group-hover:scale-110">
+                      <ArrowRight size={16} className="text-[#E1E0CC]" />
+                    </span>
+                  </Link>
+                </motion.div>
+              </div>
+            </div>
           </div>
-          <div className="inrow">
-            <input
-              placeholder="Where does auth happen? How do I add an endpoint?"
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && sendChat()}
-              disabled={chatBusy}
+        </div>
+      </section>
+
+      {/* STORY */}
+      <section id="story" className="bg-black py-20 sm:py-28 px-4">
+        <div className="bg-card rounded-2xl md:rounded-[2rem] max-w-6xl mx-auto text-center px-6 py-16 sm:py-24">
+          <span className="text-primary text-[10px] sm:text-xs uppercase tracking-[0.2em]">
+            Codebase intelligence
+          </span>
+          <div className="mt-6 mb-8">
+            <WordsPullUpMultiStyle
+              containerClassName="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl max-w-3xl mx-auto leading-[0.95] sm:leading-[0.9]"
+              segments={[
+                { text: 'I’m Docent,', className: 'font-normal' },
+                { text: 'a swarm that reads code for a living.', className: 'italic font-serif-italic' },
+                { text: 'I don’t just summarize a repo — I remember it, and I argue with myself about it.', className: 'font-normal' },
+              ]}
             />
-            <button onClick={sendChat} disabled={chatBusy || !chatInput.trim()}>Send</button>
+          </div>
+          <ScrollRevealText
+            className="max-w-2xl mx-auto text-[#DEDBC8] text-xs sm:text-sm md:text-base"
+            text="Six agents explore a repository in parallel through the BTL Runtime — reading files, tracing calls, following evidence. When they disagree, I say so. When something changes, I tell you exactly what's now wrong. A full run costs a fraction of a cent, in DeepSeek tokens routed straight through api.badtheorylabs.com."
+          />
+        </div>
+      </section>
+
+      {/* SWARM / FEATURES */}
+      <section id="swarm" className="min-h-screen bg-black py-20 sm:py-28 px-4 relative">
+        <div className="bg-noise absolute inset-0 opacity-[0.15] pointer-events-none" />
+        <div className="relative max-w-6xl mx-auto">
+          <div className="mb-12 sm:mb-16 text-center">
+            <WordsPullUpMultiStyle
+              containerClassName="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-normal block"
+              segments={[
+                { text: 'Six engineers who read your repository.', className: 'text-primary-2' },
+              ]}
+            />
+            <div className="mt-2">
+              <WordsPullUpMultiStyle
+                containerClassName="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-normal block"
+                segments={[
+                  { text: 'They argue. They remember. They cite their sources.', className: 'text-gray-500' },
+                ]}
+                delay={0.3}
+              />
+            </div>
+          </div>
+
+          <div id="memory" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-2 md:gap-1 lg:h-[480px]">
+            <FadeUp delay={0} className="rounded-2xl overflow-hidden relative bg-card min-h-[220px] lg:h-full">
+              <SwarmField />
+              <div className="absolute inset-0 flex items-end p-6">
+                <span className="text-lg font-medium" style={{ color: '#E1E0CC' }}>
+                  Six minds, one repo.
+                </span>
+              </div>
+            </FadeUp>
+
+            <FeatureCard
+              n="01"
+              title="The Swarm."
+              icon={<Bot size={20} />}
+              delay={0.15}
+              items={[
+                'The Architect maps structure and data flow, citing path:line.',
+                'The DevOps Engineer writes the quickstart nobody else did.',
+                'The Security Engineer audits env vars and flags risky defaults.',
+                'The Dependency Engineer flags supply-chain risk and dead weight.',
+              ]}
+            />
+            <FeatureCard
+              n="02"
+              title="The Debate."
+              icon={<MessagesSquare size={20} />}
+              delay={0.3}
+              items={[
+                'Cross-examines all six reports for real tension between findings.',
+                'Says plainly when there’s no conflict — never manufactures drama.',
+                'Ends in a ranked, attributed consensus of what to fix first.',
+              ]}
+            />
+            <FeatureCard
+              n="03"
+              title="The Memory."
+              icon={<Brain size={20} />}
+              delay={0.45}
+              items={[
+                'Diffs new commits against its own past understanding.',
+                'Flags which of its previous conclusions are now stale.',
+                'Remembers what you asked last time — and what changed since.',
+              ]}
+            />
           </div>
         </div>
-      )}
-
-      <footer>every call above went through api.badtheorylabs.com · chat completions + embeddings + tool use + streaming</footer>
-    </div>
+      </section>
+    </main>
   );
 }

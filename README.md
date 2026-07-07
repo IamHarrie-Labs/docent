@@ -32,7 +32,11 @@ cp .env.example .env   # add your BTL_API_KEY
 npm run dev            # http://localhost:3000
 ```
 
-Paste a repo URL, hit **Analyze**, watch the swarm work. Then commit something to the repo and analyze again — the "What changed since my last visit" briefing appears.
+- `/` — landing page (the pitch)
+- `/analyze` — the actual product: paste a repo URL, hit **Analyze**, watch the swarm work
+- `/docs` — how it works, the runtime endpoints used, how to run it locally
+
+Then commit something to the repo and analyze again — the "What changed since my last visit" briefing appears.
 
 ## See it work
 
@@ -46,15 +50,20 @@ Full run — 6 agents, debate/consensus, memory briefing — costs well under a 
 
 ```
 Next.js app
-├── /api/analyze   SSE: clone → embed index → 6 parallel tool-use agents → debate/consensus + memory briefing
-├── /api/chat      retrieval (BTL embeddings) + memory → streamed, cited answers
-├── /api/usage     live cost meter
+├── /                landing page
+├── /analyze         the dashboard — repo input, live agent panes, debate, memory, chat
+├── /docs            how it works
+├── /api/analyze     SSE: clone → embed index → 6 parallel tool-use agents → debate/consensus + memory briefing
+├── /api/chat        retrieval (BTL embeddings) + memory → streamed, cited answers
+├── /api/usage       live cost meter
 └── SQLite (better-sqlite3)
-    ├── chunks      embedded code chunks per commit
-    ├── snapshots   each agent's report per commit  ← memory
-    ├── facts       durable knowledge extracted from analyses & chats
+    ├── chunks       embedded code chunks per commit
+    ├── snapshots    each agent's report per commit  ← memory
+    ├── facts        durable knowledge extracted from analyses & chats
     └── usage_events per-call token/cost ledger
 ```
+
+Styling: Tailwind CSS v4 + Space Grotesk (grotesque sans, via `next/font`) with Instrument Serif italic as an accent typeface — dark, warm-cream palette across all three pages.
 
 ## Team
 
