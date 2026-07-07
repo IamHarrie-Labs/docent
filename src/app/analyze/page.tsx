@@ -1,6 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { marked } from 'marked';
+import {
+  Building2, Terminal, ShieldCheck, Package, Map as MapIcon, Compass,
+  MessagesSquare, Brain, MessageCircle,
+} from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 
 interface PaneState {
@@ -14,25 +19,28 @@ interface PaneState {
 interface Usage { calls: number; prompt_tokens: number; completion_tokens: number; est_cost_usd: number }
 
 const AGENT_TITLES: Record<string, string> = {
-  architecture: '🏗️ The Architect',
-  quickstart: '🛠️ The DevOps Engineer',
-  config: '🔒 The Security Engineer',
-  dependencies: '📦 The Dependency Engineer',
-  diagram: '🗺️ The Systems Cartographer',
-  tour: '🧭 The Mentor',
+  architecture: 'The Architect',
+  quickstart: 'The DevOps Engineer',
+  config: 'The Security Engineer',
+  dependencies: 'The Dependency Engineer',
+  diagram: 'The Systems Cartographer',
+  tour: 'The Mentor',
 };
 
-// Minimal markdown → HTML (headers, bold, inline/blocks of code) for pane rendering.
+const AGENT_ICONS: Record<string, React.ElementType> = {
+  architecture: Building2,
+  quickstart: Terminal,
+  config: ShieldCheck,
+  dependencies: Package,
+  diagram: MapIcon,
+  tour: Compass,
+};
+
+marked.setOptions({ gfm: true, breaks: true });
+
+// Full markdown (headers, lists, tables, bold/italic, code) for pane rendering.
 function mdToHtml(md: string): string {
-  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  let out = esc(md);
-  out = out.replace(/```(\w*)\n([\s\S]*?)```/g, (_m, _lang, code) => `<pre><code>${code}</code></pre>`);
-  out = out.replace(/`([^`\n]+)`/g, '<code>$1</code>');
-  out = out.replace(/^### (.*)$/gm, '<h3>$1</h3>');
-  out = out.replace(/^## (.*)$/gm, '<h2>$1</h2>');
-  out = out.replace(/^# (.*)$/gm, '<h1>$1</h1>');
-  out = out.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
-  return out;
+  return marked.parse(md, { async: false }) as string;
 }
 
 function extractMermaid(md: string): string | null {
@@ -79,10 +87,12 @@ function Pane({ pane }: { pane: PaneState }) {
     }
   }, [pane.status, pane.id, pane.text]);
 
+  const Icon = AGENT_ICONS[pane.id];
+
   return (
     <div className="pane">
       <div className="hd">
-        <span>{pane.title}</span>
+        <span className="hdtitle">{Icon && <Icon size={14} className="text-primary" />}{pane.title}</span>
         <span className={`status ${pane.status}`}>
           {pane.status === 'running' ? '● streaming' : pane.status === 'done' ? '✓ done' : pane.status === 'error' ? '✗ error' : 'idle'}
         </span>
@@ -92,7 +102,7 @@ function Pane({ pane }: { pane: PaneState }) {
           <div className="toolline">{pane.tools.slice(-3).map((t, i) => <div key={i}>⚙ {t}</div>)}</div>
         )}
         {svg ? <div className="mermaidbox" dangerouslySetInnerHTML={{ __html: svg }} /> : null}
-        <div dangerouslySetInnerHTML={{ __html: mdToHtml(svg ? stripMermaidSource(pane.text) : pane.text) }} />
+        <div className="md" dangerouslySetInnerHTML={{ __html: mdToHtml(svg ? stripMermaidSource(pane.text) : pane.text) }} />
       </div>
     </div>
   );
@@ -278,15 +288,15 @@ export default function AnalyzePage() {
 
       {debate && (
         <div className="debatepane">
-          <h3>🗣️ Team Debate &amp; Consensus</h3>
-          <div dangerouslySetInnerHTML={{ __html: mdToHtml(debate.text) }} />
+          <h3><MessagesSquare size={14} /> Team Debate &amp; Consensus</h3>
+          <div className="md" dangerouslySetInnerHTML={{ __html: mdToHtml(debate.text) }} />
         </div>
       )}
 
       {memory && (
         <div className="memorypane">
-          <h3>🧠 The Historian, what changed since my last visit</h3>
-          <div dangerouslySetInnerHTML={{ __html: mdToHtml(memory.text) }} />
+          <h3><Brain size={14} /> The Historian, what changed since my last visit</h3>
+          <div className="md" dangerouslySetInnerHTML={{ __html: mdToHtml(memory.text) }} />
         </div>
       )}
 
@@ -298,10 +308,10 @@ export default function AnalyzePage() {
 
       {repoId && sha && (
         <div className="chat">
-          <div className="hd">💬 Ask the team <span>retrieval + persistent memory · remembers across sessions</span></div>
+          <div className="hd"><MessageCircle size={14} className="inline -mt-0.5 mr-1.5" />Ask the team <span>retrieval + persistent memory · remembers across sessions</span></div>
           <div className="msgs" ref={msgsRef}>
             {chat.map((m, i) => (
-              <div key={i} className={`msg ${m.role}`} dangerouslySetInnerHTML={{ __html: mdToHtml(m.content) }} />
+              <div key={i} className={`msg md ${m.role}`} dangerouslySetInnerHTML={{ __html: mdToHtml(m.content) }} />
             ))}
           </div>
           <div className="inrow">

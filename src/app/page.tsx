@@ -76,12 +76,12 @@ export default function Home() {
 
           <Navbar />
 
-          <div className="absolute bottom-0 left-0 p-6 md:p-12 pb-10 md:pb-14 max-w-md md:max-w-lg">
+          <div className="absolute bottom-0 left-0 p-6 md:p-12 pb-10 md:pb-14 max-w-lg md:max-w-xl">
             <h1 className="select-none mb-5" style={{ color: '#E1E0CC' }}>
               <WordsPullUp
                 text="Docent"
                 showAsterisk
-                className="text-6xl sm:text-7xl md:text-8xl font-medium leading-[0.85] tracking-[-0.03em]"
+                className="text-6xl sm:text-7xl md:text-8xl font-extrabold leading-[0.85] tracking-[-0.03em]"
               />
             </h1>
             <div className="flex flex-col gap-5">
@@ -89,8 +89,8 @@ export default function Home() {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.8, ease: EASE, delay: 0.5 }}
-                className="text-primary/70 text-xs sm:text-sm md:text-base"
-                style={{ lineHeight: 1.2 }}
+                className="text-primary/70 text-sm sm:text-base md:text-lg"
+                style={{ lineHeight: 1.3 }}
               >
                 Docent is a swarm of six engineers: Architect, DevOps, Security,
                 Dependency, Cartographer, and Mentor. They read any repository

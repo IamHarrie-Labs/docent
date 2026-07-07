@@ -73,13 +73,17 @@ html, body {
   background: linear-gradient(180deg, #191510, var(--color-card-2));
   border-radius: 16px; padding: 12px 16px; margin-bottom: 12px;
 }
-.memorypane h3 { color: var(--color-gold); font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 6px; }
+.memorypane h3, .debatepane h3 {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 6px;
+}
+.memorypane h3 { color: var(--color-gold); }
 
 .debatepane {
   background: linear-gradient(180deg, #1c160c, var(--color-card-2));
   border-radius: 16px; padding: 12px 16px; margin-bottom: 12px;
 }
-.debatepane h3 { color: var(--color-warn); font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 6px; }
+.debatepane h3 { color: var(--color-warn); }
 
 .grid {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
@@ -97,21 +101,42 @@ html, body {
   padding: 10px 14px; border-bottom: 1px solid var(--color-border);
   font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
 }
+.pane .hd .hdtitle { display: flex; align-items: center; gap: 6px; }
 .pane .hd .status { font-size: 9px; font-family: var(--mono); color: var(--color-muted); }
 .pane .hd .status.running { color: var(--color-warn); }
 .pane .hd .status.done { color: var(--color-primary); }
 .pane .hd .status.error { color: var(--color-err); }
 .pane .body {
   padding: 10px 14px; overflow-y: auto; flex: 1;
-  font-size: 11px; white-space: pre-wrap; word-break: break-word;
+  font-size: 11.5px; word-break: break-word;
 }
-.pane .body .toolline { color: var(--color-muted); font-family: var(--mono); font-size: 10px; }
-.pane .body h1, .pane .body h2, .pane .body h3 { font-size: 12px; margin: 6px 0 3px; color: var(--color-primary); }
-.pane .body code { font-family: var(--mono); background: #1e1e1e; padding: 1px 4px; border-radius: 4px; font-size: 10px; }
-.pane .body pre { background: #0c0c0c; border: 1px solid var(--color-border); border-radius: 6px; padding: 8px; overflow-x: auto; margin: 5px 0; }
-.pane .body pre code { background: none; padding: 0; }
+.pane .body .toolline { color: var(--color-muted); font-family: var(--mono); font-size: 10px; margin-bottom: 6px; }
 
 .mermaidbox { background: #fff; border-radius: 8px; padding: 6px; margin: 5px 0; overflow-x: auto; }
+
+/* Shared markdown rendering for agent/debate/memory/chat output */
+.md { line-height: 1.6; }
+.md > *:first-child { margin-top: 0; }
+.md > *:last-child { margin-bottom: 0; }
+.md p { margin: 0 0 8px; }
+.md h1, .md h2, .md h3, .md h4 { color: var(--color-primary); font-weight: 700; margin: 12px 0 6px; line-height: 1.3; }
+.md h1 { font-size: 1.15em; }
+.md h2 { font-size: 1.08em; }
+.md h3, .md h4 { font-size: 1em; }
+.md ul, .md ol { margin: 0 0 10px; padding-left: 1.3em; }
+.md li { margin-bottom: 4px; }
+.md li > ul, .md li > ol { margin-top: 4px; margin-bottom: 0; }
+.md strong { color: var(--color-primary-2); font-weight: 700; }
+.md em { font-style: italic; color: var(--color-primary); }
+.md a { color: var(--color-gold); text-decoration: underline; text-underline-offset: 2px; }
+.md blockquote { border-left: 2px solid var(--color-gold); padding-left: 10px; margin: 8px 0; color: var(--color-muted); }
+.md hr { border: none; border-top: 1px solid var(--color-border); margin: 12px 0; }
+.md code { font-family: var(--mono); background: #1e1e1e; padding: 1px 4px; border-radius: 4px; font-size: 0.92em; }
+.md pre { background: #0c0c0c; border: 1px solid var(--color-border); border-radius: 6px; padding: 8px; overflow-x: auto; margin: 8px 0; }
+.md pre code { background: none; padding: 0; }
+.md table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 0.95em; }
+.md th, .md td { border: 1px solid var(--color-border); padding: 5px 9px; text-align: left; }
+.md th { color: var(--color-primary); font-weight: 700; background: rgba(255,255,255,0.03); }
 
 .chat {
   background: var(--color-card-2); border-radius: 16px;
@@ -120,7 +145,7 @@ html, body {
 .chat .hd { padding: 12px 16px; border-bottom: 1px solid var(--color-border); font-weight: 700; font-size: 13px; }
 .chat .hd span { color: var(--color-muted); font-weight: 400; font-size: 10.5px; margin-left: 6px; }
 .chat .msgs { flex: 1; overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
-.msg { max-width: 82%; border-radius: 10px; padding: 7px 11px; font-size: 12px; white-space: pre-wrap; word-break: break-word; }
+.msg { max-width: 82%; border-radius: 10px; padding: 7px 11px; font-size: 12px; word-break: break-word; }
 .msg.user { align-self: flex-end; background: #262626; }
 .msg.assistant { align-self: flex-start; background: var(--color-panel); border: 1px solid var(--color-border); }
 .chat .inrow { display: flex; gap: 6px; padding: 10px; border-top: 1px solid var(--color-border); }
