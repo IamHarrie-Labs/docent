@@ -6,7 +6,6 @@ import {
   Building2, Terminal, ShieldCheck, Package, Map as MapIcon, Compass,
   MessagesSquare, Brain, MessageCircle,
 } from 'lucide-react';
-import { Navbar } from '@/components/Navbar';
 
 interface PaneState {
   id: string;
@@ -255,8 +254,7 @@ export default function AnalyzePage() {
 
   return (
     <div className="relative min-h-screen bg-black">
-      <Navbar />
-      <div className="container pt-28 sm:pt-32">
+      <div className="container pt-8">
         <header className="top flex flex-wrap items-end justify-between gap-3 pb-6">
           <div>
             <h1 className="text-xl sm:text-2xl font-medium tracking-tight" style={{ color: '#E1E0CC' }}>
